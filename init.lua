@@ -90,7 +90,6 @@ P.S. You can delete this when you're done too. It's your config now! :)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
-
 -- [[ Setting options ]]
 -- See `:help vim.opt`
 -- NOTE: You can change these options as you wish!
@@ -526,6 +525,9 @@ require('lazy').setup {
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
 
+      require('lspconfig').gdscript.setup {
+        capabilities = capabilities,
+      }
       -- Enable the following language servers
       --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
       --
@@ -780,11 +782,14 @@ require('lazy').setup {
 
       ---@diagnostic disable-next-line: missing-fields
       require('nvim-treesitter.configs').setup {
-        ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc' },
+        ensure_installed = { 'bash', 'c', 'html', 'lua', 'markdown', 'vim', 'vimdoc', 'gdscript' },
         -- Autoinstall languages that are not installed
         auto_install = true,
         highlight = { enable = true },
-        indent = { enable = true },
+        indent = {
+          enable = true,
+          disable = { 'gdscript' },
+        },
       }
 
       -- There are additional nvim-treesitter modules that you can use to interact
@@ -795,6 +800,9 @@ require('lazy').setup {
       --    - Treesitter + textobjects: https://github.com/nvim-treesitter/nvim-treesitter-textobjects
     end,
   },
+
+  -- Better auto-indenting for gdscript
+  { 'habamax/vim-godot', event = 'VimEnter' },
 
   -- The following two comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
@@ -820,5 +828,11 @@ require 'custom.mfr.keymaps'
 require 'custom.mfr.settings'
 require 'custom.mfr.plugins.harpoon'
 
+-- Start the godothost server if a project.godot file is present
+local gdproject = io.open(vim.fn.getcwd() .. '/project.godot', 'r')
+if gdproject then
+  io.close(gdproject)
+  vim.fn.serverstart './godothost'
+end
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
